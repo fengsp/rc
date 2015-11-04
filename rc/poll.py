@@ -7,7 +7,7 @@ class BasePoller(object):
     def __init__(self, objects):
         self.objects = dict(objects)
 
-    def poll(self):
+    def poll(self, timeout=None):
         """The return value is two list of objects that are ready:
         (rlist, wlist).
         """
@@ -23,9 +23,9 @@ class BasePoller(object):
 class SelectPoller(BasePoller):
     is_supported = hasattr(select, 'select')
 
-    def poll(self):
+    def poll(self, timeout=None):
         objs = self.objects.values()
-        rlist, wlist, _ = select.select(objects, objects, [])
+        rlist, wlist, _ = select.select(objects, objects, [], timeout)
         return rlist, wlist
 
 
@@ -47,10 +47,10 @@ class PollPoller(BasePoller):
             self.fd_to_object.pop(rv.fileno(), None)
         return rv
 
-    def poll(self):
+    def poll(self, timeout=None):
         rlist = []
         wlist = []
-        for fd, event in self.pollobj.poll():
+        for fd, event in self.pollobj.poll(timeout):
             obj = self.fd_to_object[fd]
             if event & select.POLLIN:
                 rlist.append(obj)
@@ -85,10 +85,10 @@ class KQueuePoller(BasePoller):
             self.fd_to_object.pop(rv.fileno(), None)
         return rv
 
-    def poll(self):
+    def poll(self, timeout=None):
         rlist = []
         wlist = []
-        events = self.kqueue.control(self.events, 128)
+        events = self.kqueue.control(self.events, 128, timeout)
         for event in events:
             obj = self.fd_to_object.get(event.ident)
             if obj is None:
@@ -118,10 +118,12 @@ class EpollPoller(BasePoller):
             self.fd_to_object.pop(rv.fileno(), None)
         return rv
 
-    def poll(self):
+    def poll(self, timeout=None):
+        if timeout is None:
+            timeout = -1
         rlist = []
         wlist = []
-        for fd, event in self.epoll.poll():
+        for fd, event in self.epoll.poll(timeout):
             obj = self.fd_to_object[fd]
             if event & select.EPOLLIN:
                 rlist.append(obj)
