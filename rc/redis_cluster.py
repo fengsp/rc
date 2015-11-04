@@ -1,3 +1,5 @@
+import weakref
+
 from redis.connection import ConnectionPool, UnixDomainSocketConnection
 try:
     from redis.connection import SSLConnection

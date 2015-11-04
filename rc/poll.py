@@ -25,7 +25,7 @@ class SelectPoller(BasePoller):
 
     def poll(self, timeout=None):
         objs = self.objects.values()
-        rlist, wlist, _ = select.select(objects, objects, [], timeout)
+        rlist, wlist, _ = select.select(objs, objs, [], timeout)
         return rlist, wlist
 
 
@@ -73,7 +73,7 @@ class KQueuePoller(BasePoller):
                 flags=select.KQ_EV_ADD | select.KQ_EV_ENABLE)
             self.events.append(r_event)
             w_event = select.kevent(
-                f.fileno(), filter=select.KQ_FILTER_WRITE,
+                obj.fileno(), filter=select.KQ_FILTER_WRITE,
                 flags=select.KQ_EV_ADD | select.KQ_EV_ENABLE)
             self.events.append(w_event)
             self.fd_to_object[obj.fileno()] = obj

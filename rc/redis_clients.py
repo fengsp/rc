@@ -1,4 +1,3 @@
-import weakref
 import socket
 import errno
 
@@ -46,7 +45,7 @@ class RedisClusterClient(RedisBaseClient):
             connection.send_command(*args)
             return self.parse_response(connection, command_name, **options)
         finally:
-            pool.release(connection)
+            connection_pool.release(connection)
 
     def mget(self, keys, *args):
         args = list_or_args(keys, args)
@@ -60,16 +59,16 @@ class RedisClusterClient(RedisBaseClient):
             buf.enqueue_key(arg)
         # poll all results back with max concurrency
         results = {}
-        ramaining_buf_items = bufs.items()
-        while ramaining_buf_items:
+        remaining_buf_items = bufs.items()
+        while remaining_buf_items:
             buf_items = remaining_buf_items[:self.max_concurrency]
-            remaining_buf_items = ramaining_buf_items[self.max_concurrency:]
+            remaining_buf_items = remaining_buf_items[self.max_concurrency:]
             bufs_poll = poller(buf_items)
             while bufs_poll:
                 rlist, wlist = bufs_poll.poll()
                 for rbuf in rlist:
                     if not rbuf.has_pending_request:
-                        result.update(rbuf.fetch_response(self))
+                        results.update(rbuf.fetch_response(self))
                         bufs_poll.pop(rbuf.host_name)
                 for wbuf in wlist:
                     if wbuf.has_pending_request:
@@ -84,7 +83,7 @@ class RedisClusterClient(RedisBaseClient):
         if buf is not None:
             return buf
         connection_pool = self.connection_pool
-        connection = connection_pool.get_connection(command_name, host_name)
+        connection = connection_pool.get_connection('MGET', host_name)
         buf = MGETBuffer(host_name, connection)
         bufs[host_name] = buf
         return buf
