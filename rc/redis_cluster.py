@@ -5,6 +5,7 @@ except ImportError:
     SSLConnection = None
 
 from rc.redis_clients import RedisClusterClient
+from rc.redis_router import RedisCRC32HashRouter
 
 
 class HostConfig(object):
@@ -21,6 +22,12 @@ class HostConfig(object):
         self.ssl = ssl
         self.ssl_options = ssl_options
 
+    def __repr__(self):
+        return '<%s %s>' % (
+            self.__class__.__name__,
+            ' '.join('%s=%s' % x for x in sorted(self.__dict__.items())),
+        )
+
 
 class RedisCluster(object):
     """The redis cluster is the object that holds the connection pools to
@@ -33,7 +40,7 @@ class RedisCluster(object):
     def __init__(self, hosts, router_cls=None, pool_cls=None,
                  pool_options=None):
         if router_cls is None:
-            router_cls = RedisRouter
+            router_cls = RedisCRC32HashRouter
         if pool_cls is None:
             pool_cls = ConnectionPool
         if pool_options is None:
