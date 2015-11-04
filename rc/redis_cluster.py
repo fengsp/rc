@@ -33,7 +33,7 @@ class HostConfig(object):
         }
         return '<%s %s>' % (
             self.__class__.__name__,
-            ' '.join('%s=%s' % x for x in sorted(identity_dict)),
+            ' '.join('%s=%s' % x for x in sorted(identity_dict.items())),
         )
 
 
