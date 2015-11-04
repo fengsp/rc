@@ -36,7 +36,7 @@ class PollPoller(BasePoller):
         BasePoller.__init__(self, objects)
         self.pollobj = select.poll()
         self.fd_to_object = {}
-        for obj in objects:
+        for _, obj in objects:
             self.pollobj.register(obj.fileno(), select.POLLIN | select.POLLOUT)
             self.fd_to_object[obj.fileno()] = obj
 
@@ -67,7 +67,7 @@ class KQueuePoller(BasePoller):
         self.kqueue = select.kqueue()
         self.events = []
         self.fd_to_object = {}
-        for obj in objects:
+        for _, obj in objects:
             r_event = select.kevent(
                 obj.fileno(), filter=select.KQ_FILTER_READ,
                 flags=select.KQ_EV_ADD | select.KQ_EV_ENABLE)
@@ -107,7 +107,7 @@ class EpollPoller(BasePoller):
         BasePoller.__init__(self, objects)
         self.epoll = select.epoll()
         self.fd_to_object = {}
-        for obj in objects:
+        for _, obj in objects:
             self.fd_to_object[obj.fileno()] = obj
             self.epoll.register(obj.fileno(), select.EPOLLIN | select.EPOLLOUT)
 

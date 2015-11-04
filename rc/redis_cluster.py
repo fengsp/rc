@@ -58,7 +58,7 @@ class RedisCluster(object):
         self.pool_options = pool_options
         self.hosts = {}
         for host_name, host_config in hosts.iteritems():
-            self.hosts[host_name] = HostConfig(**host_config)
+            self.hosts[host_name] = HostConfig(host_name, **host_config)
         self.router = self.router_cls(self.hosts)
         #: connection pools of all hosts
         self._pools = {}

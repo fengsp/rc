@@ -99,7 +99,7 @@ class MGETBuffer(object):
         self.connection = connection
         self.keys = []
         self.pending_keys = []
-        self._send_buf = None
+        self._send_buf = []
 
         connection.connect()
 
@@ -124,18 +124,23 @@ class MGETBuffer(object):
             timeout = sock.gettimeout()
             sock.setblocking(False)
             try:
-                sent = 0
-                while 1:
-                    try:
-                        sent = sock.send(self._send_buf)
-                    except socket.error, e:
-                        if e.errno == errno.EAGAIN:
-                            continue
-                        elif e.errno == errno.EWOULDBLOCK:
-                            break
-                        raise
-                    break
-                self._send_buf = self._send_buf[sent:]
+                for i, item in enumerate(self._send_buf):
+                    sent = 0
+                    while 1:
+                        try:
+                            sent = sock.send(item)
+                        except socket.error, e:
+                            if e.errno == errno.EAGAIN:
+                                continue
+                            elif e.errno == errno.EWOULDBLOCK:
+                                break
+                            raise
+                        break
+                    if sent < len(item):
+                        self._send_buf[:i + 1] = [item[sent:]]
+                        break
+                else:
+                    del self._send_buf[:]
             finally:
                 sock.settimeout(timeout)
         except socket.timeout:
@@ -154,7 +159,7 @@ class MGETBuffer(object):
         self.assert_open()
         if self.keys:
             args = ('MGET',) + tuple(self.keys)
-            self._send_buf = self.connection.pack_command(*args)
+            self._send_buf.extend(self.connection.pack_command(*args))
             self.pending_keys = self.keys
             self.keys = []
         if not self._send_buf:
