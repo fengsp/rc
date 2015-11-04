@@ -25,9 +25,15 @@ class HostConfig(object):
         self.ssl_options = ssl_options
 
     def __repr__(self):
+        identity_dict = {
+            'host': self.host,
+            'port': self.port,
+            'unix_socket_path': self.unix_socket_path,
+            'db': self.db,
+        }
         return '<%s %s>' % (
             self.__class__.__name__,
-            ' '.join('%s=%s' % x for x in sorted(self.__dict__.items())),
+            ' '.join('%s=%s' % x for x in sorted(identity_dict)),
         )
 
 
