@@ -88,7 +88,7 @@ class RedisCluster(object):
             self._pools[host_name] = pool
             return pool
 
-    def get_cluster_client(self):
+    def get_client(self):
         """Returns a cluster client.  This client can automatically route
         the requests to the corresponding node."""
         return RedisClusterClient(RedisClusterPool(self))

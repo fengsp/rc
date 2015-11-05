@@ -11,7 +11,7 @@ def test_all_pollers(redis_hosts, poller, monkeypatch):
 
     # assert len(supported_pollers) == 4
     redis_cluster = RedisCluster(redis_hosts)
-    cluster_client = redis_cluster.get_cluster_client()
+    cluster_client = redis_cluster.get_client()
     keys = []
     for i in range(10):
         key = 'key-%s' % i
