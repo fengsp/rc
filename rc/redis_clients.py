@@ -9,7 +9,7 @@ try:
 except ImportError:
     TimeoutError = ConnectionError
 
-from rc.poll import poller
+from rc.poller import poller
 
 
 class RedisBaseClient(StrictRedis):
