@@ -5,7 +5,7 @@ rc - the redis cache.
 
 - easy to use
 - can build cache cluster
-- get multiple cache results at one time (do it in parallel for cluster)
+- batch-fetch multiple cache results (do it in parallel for cluster)
 
 For full documentation see `rc.readthedocs <rc.readthedocs.org>`_.
 
