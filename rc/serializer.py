@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*-
+import json
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
+
+class BaseSerializer(object):
+    """Baseclass for serializer.  Subclass this to get your own serializer."""
+
+    def dumps(self, obj):
+        """Dumps an object into a string for redis."""
+        raise NotImplementedError()
+
+    def loads(self, string):
+        """Read a serialized object from a string."""
+        raise NotImplementedError()
+
+
+class PickleSerializer(BaseSerializer):
+
+    def dumps(self, obj):
+        return pickle.dumps(obj)
+
+    def loads(self, string):
+        return pickle.loads(string)
+
+
+class JSONSerializer(BaseSerializer):
+
+    def dumps(self, obj):
+        return json.dumps(obj)
+
+    def loads(self, string):
+        return json.loads(string)
