@@ -48,6 +48,11 @@ class RedisClusterClient(BaseRedisClient):
         finally:
             connection_pool.release(connection)
 
+    def delete(self, name):
+        """We just support one key delete for now."""
+        names = [name]
+        return self.execute_command('DEL', *names)
+
     def mget(self, keys, *args):
         args = list_or_args(keys, args)
         connection_pool = self.connection_pool

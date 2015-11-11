@@ -11,7 +11,7 @@ class BaseRedisRouter(object):
         self.hosts = hosts
 
     def get_key_for_command(self, command, args):
-        if command in ('GET', 'SET'):
+        if command in ('GET', 'SET', 'SETEX', 'DEL'):
             return args[0]
         raise RuntimeError('The command "%s" is not supported yet.' % command)
 

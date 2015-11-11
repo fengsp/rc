@@ -13,3 +13,28 @@ def test_redis_cluster_client_basic_operations(redis_hosts):
     for i, key in enumerate(keys):
         assert client.get(key) == str(i)
     assert client.mget(keys) == map(str, range(10))
+
+    keys = []
+    for i in xrange(10, 20):
+        key = 'test key: %s' % i
+        keys.append(key)
+        client.setex(key, 100, i)
+    for i, key in enumerate(keys, 10):
+        assert client.get(key) == str(i)
+    assert client.mget(keys) == map(str, range(10, 20))
+
+    keys = []
+    deleted_keys = []
+    for i in xrange(20, 30):
+        key = 'test key: %s' % i
+        keys.append(key)
+        client.setex(key, 100, i)
+    for i in xrange(20, 25):
+        key = 'test key: %s' % i
+        deleted_keys.append(key)
+        client.delete(key)
+    for i, key in enumerate(keys[5:], 25):
+        assert client.get(key) == str(i)
+    for key in deleted_keys:
+        assert client.get(key) == None
+    assert client.mget(keys) == [None] * 5 + map(str, range(25, 30))
