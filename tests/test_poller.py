@@ -1,6 +1,6 @@
 import pytest
 
-from rc.poll import supported_pollers
+from rc.poller import supported_pollers
 from rc import redis_clients
 from rc.redis_cluster import RedisCluster
 
