@@ -24,6 +24,8 @@ class PickleSerializer(BaseSerializer):
         return pickle.dumps(obj)
 
     def loads(self, string):
+        if string is None:
+            return
         return pickle.loads(string)
 
 
@@ -33,4 +35,6 @@ class JSONSerializer(BaseSerializer):
         return json.dumps(obj)
 
     def loads(self, string):
+        if string is None:
+            return
         return json.loads(string)

@@ -12,6 +12,7 @@ def test_pickle_serializer():
     obj = {'key': 'value'}
     string = serializer.dumps(obj)
     assert obj == serializer.loads(string)
+    assert serializer.loads(None) is None
 
 
 def test_json_serializer():
@@ -25,3 +26,4 @@ def test_json_serializer():
     obj = {'key': 'value'}
     string = serializer.dumps(obj)
     assert obj == serializer.loads(string)
+    assert serializer.loads(None) is None
