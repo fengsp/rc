@@ -1,6 +1,7 @@
 import tempfile
 import uuid
 import os
+import time
 import socket
 import shutil
 from subprocess import Popen, PIPE
@@ -27,6 +28,7 @@ class RedisServer(object):
                 s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                 s.connect(socket_path)
             except IOError:
+                time.sleep(0.05)
                 continue
             else:
                 break
@@ -64,3 +66,8 @@ def redis_hosts(request):
         shutil.rmtree(socket_dir)
     request.addfinalizer(fin)
     return hosts
+
+
+@pytest.fixture(scope='session')
+def redis_unix_socket_path(redis_hosts):
+    return redis_hosts.values()[0]['unix_socket_path']
