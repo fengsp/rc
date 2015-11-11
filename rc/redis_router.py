@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from binascii import crc32
 
 from rc.ketama import HashRing

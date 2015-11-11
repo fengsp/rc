@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import weakref
 
 from redis.connection import ConnectionPool, UnixDomainSocketConnection
