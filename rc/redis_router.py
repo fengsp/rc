@@ -3,7 +3,7 @@ from binascii import crc32
 from rc.ketama import HashRing
 
 
-class RedisBaseRouter(object):
+class BaseRedisRouter(object):
     """Subclass this to implement your own router."""
 
     def __init__(self, hosts):
@@ -22,11 +22,11 @@ class RedisBaseRouter(object):
         return self.get_host_for_key(self.get_key_for_command(command, args))
 
 
-class RedisCRC32HashRouter(RedisBaseRouter):
+class RedisCRC32HashRouter(BaseRedisRouter):
     """Use crc32 for hash partitioning."""
 
     def __init__(self, hosts):
-        RedisBaseRouter.__init__(self, hosts)
+        BaseRedisRouter.__init__(self, hosts)
         self._sorted_host_names = sorted(hosts.keys())
 
     def get_host_for_key(self, key):
@@ -38,11 +38,11 @@ class RedisCRC32HashRouter(RedisBaseRouter):
         return self._sorted_host_names[pos]
 
 
-class RedisConsistentHashRouter(RedisBaseRouter):
+class RedisConsistentHashRouter(BaseRedisRouter):
     """Use ketama for hash partitioning."""
 
     def __init__(self, hosts):
-        RedisBaseRouter.__init__(self, hosts)
+        BaseRedisRouter.__init__(self, hosts)
         self._hashring = HashRing(hosts.values())
 
     def get_host_for_key(self, key):

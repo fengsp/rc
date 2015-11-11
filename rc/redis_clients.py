@@ -12,18 +12,18 @@ except ImportError:
 from rc.poller import poller
 
 
-class RedisBaseClient(StrictRedis):
+class BaseRedisClient(StrictRedis):
     pass
 
 
-class RedisClient(RedisBaseClient):
+class RedisClient(BaseRedisClient):
     pass
 
 
-class RedisClusterClient(RedisBaseClient):
+class RedisClusterClient(BaseRedisClient):
 
     def __init__(self, connection_pool, max_concurrency=None):
-        RedisBaseClient.__init__(self, connection_pool=connection_pool)
+        BaseRedisClient.__init__(self, connection_pool=connection_pool)
         if max_concurrency is None:
             max_concurrency = 64
         self.max_concurrency = max_concurrency
