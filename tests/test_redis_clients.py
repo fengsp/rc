@@ -36,5 +36,5 @@ def test_redis_cluster_client_basic_operations(redis_hosts):
     for i, key in enumerate(keys[5:], 25):
         assert client.get(key) == str(i)
     for key in deleted_keys:
-        assert client.get(key) == None
+        assert client.get(key) is None
     assert client.mget(keys) == [None] * 5 + map(str, range(25, 30))
