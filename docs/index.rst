@@ -1,22 +1,38 @@
-.. rc documentation master file, created by
-   sphinx-quickstart on Wed Nov 11 23:47:41 2015.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Welcome to RC
+=============
 
-Welcome to rc's documentation!
-==============================
+Welcome to rc's documentation.  Caching can be fun and easy.
 
-Contents:
+
+User's Guide
+------------
+
+This part of the documentation begins with installation, followed by more
+instructions for doing cache with rc.
 
 .. toctree::
    :maxdepth: 2
 
+   foreword
+   installation
+   quickstart
+   tutorial
+   cache
+   cache_config
+   cache_cluster_config
+   serializer
+   redis_cluster_router
+   testing
+   patterns/index
 
 
-Indices and tables
-==================
+API Reference
+-------------
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+This part of the documentation contains information on a specific function,
+class or method.
 
+.. toctree::
+   :maxdepth: 2
+
+   api
