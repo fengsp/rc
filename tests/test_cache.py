@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from rc.cache import NullCache, Cache
+from rc.cache import Cache
+from rc.testing import NullCache
 
 
 def test_null_cache():

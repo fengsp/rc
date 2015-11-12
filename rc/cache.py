@@ -92,25 +92,6 @@ class BaseCache(object):
             self.delete(key)
 
 
-class NullCache(BaseCache):
-    """Use this for unit test."""
-
-    def __init__(self, *args, **kwargs):
-        BaseCache.__init__(self)
-
-    def get(self, key):
-        return
-
-    def set(self, key, value, time=None):
-        pass
-
-    def delete(self, key):
-        pass
-
-    def get_many(self, *keys):
-        return [None for key in keys]
-
-
 class Cache(BaseCache):
     """Uses a single Redis server as backend.
 
