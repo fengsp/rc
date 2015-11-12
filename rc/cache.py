@@ -58,18 +58,20 @@ class BaseCache(object):
 
         :param key: cache key
         :param value: value for the key
+        :return: Whether the key has been set
         """
         if time is None:
             time = self.default_expires_time
         string = self.serializer.dumps(value)
-        self.client.setex(self.key_prefix + key, time, string)
+        return self.client.setex(self.key_prefix + key, time, string)
 
     def delete(self, key):
         """Deletes the value for the cache key.
 
         :param key: cache key
+        :return: Whether the key has been deleted
         """
-        self.client.delete(self.key_prefix + key)
+        return self.client.delete(self.key_prefix + key)
 
     def get_many(self, *keys):
         """Returns the a list of values for the cache keys."""
@@ -82,14 +84,20 @@ class BaseCache(object):
         The values expires in time seconds.
 
         :param mapping: a dictionary with key/values to set
+        :return: whether all keys has been set
         """
+        rv = True
         for key, value in mapping.iteritems():
-            self.set(key, value, time)
+            if not self.set(key, value, time):
+                rv = False
+        return rv
 
     def delete_many(self, *keys):
-        """Deletes multiple keys."""
-        for key in keys:
-            self.delete(key)
+        """Deletes multiple keys.
+
+        :return: whether all keys has been deleted
+        """
+        return all(self.delete(key) for key in keys)
 
 
 class Cache(BaseCache):
@@ -130,10 +138,13 @@ class Cache(BaseCache):
                            **self.redis_options)
 
     def delete_many(self, *keys):
-        """Deletes multiple keys."""
+        """Deletes multiple keys.
+
+        :return: whether all keys has been deleted
+        """
         if self.key_prefix:
             keys = [self.key_prefix + key for key in keys]
-        self.client.delete(*keys)
+        return self.client.delete(*keys)
 
 
 class CacheCluster(BaseCache):
