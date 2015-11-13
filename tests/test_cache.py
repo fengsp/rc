@@ -47,8 +47,37 @@ def test_cache_basic_apis(redis_unix_socket_path):
 def test_cache_key_prefix(redis_unix_socket_path):
     cache01 = Cache(redis_options={'unix_socket_path': redis_unix_socket_path})
     cache02 = Cache(
-        key_prefix='test:',
+        namespace='test:',
         redis_options={'unix_socket_path': redis_unix_socket_path})
     assert cache01.set('key', 'value')
     assert cache01.get('key') == 'value'
     assert cache02.get('key') is None
+
+
+def test_cache_decorator_basic_apis(redis_unix_socket_path):
+    cache = Cache(redis_options={'unix_socket_path': redis_unix_socket_path})
+
+    @cache.cache()
+    def load(name, offset):
+        return ' '.join(('load', name, offset))
+    assert load('name', 'offset') == 'load name offset'
+    assert load('name', offset='offset') == 'load name offset'
+
+    @cache.cache()
+    def load(name, offset):
+        return ' '.join(('load02', name, offset))
+    assert load('name', 'offset') == 'load name offset'
+    assert load('name', offset='offset') == 'load name offset'
+    assert cache.invalidate(load, 'name', 'offset')
+    assert load('name', 'offset') == 'load02 name offset'
+    assert load('name', offset='offset') == 'load name offset'
+    assert cache.invalidate(load, 'name', offset='offset')
+    assert load('name', offset='offset') == 'load02 name offset'
+
+    class Foo(object):
+        @cache.cache()
+        def load_method(self, name, offset):
+            return ' '.join(('load', name, offset))
+    foo = Foo()
+    assert foo.load_method('name', 'offset') == 'load name offset'
+    assert foo.load_method('name', offset='offset') == 'load name offset'
