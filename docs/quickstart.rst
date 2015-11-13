@@ -13,10 +13,10 @@ A minimal cache example looks like this::
 
     from rc import Cache
 
-    c = Cache()
-    c.set('key', 'value')
-    assert c.get('key') == 'value'
-    assert c.get('foo') is None
+    cache = Cache()
+    assert cache.set('key', 'value')
+    assert cache.get('key') == 'value'
+    assert cache.get('foo') is None
 
 What we are doing here?
 
@@ -28,22 +28,36 @@ What we are doing here?
 Build A Cache Cluster
 ---------------------
 
-pass
+::
+
+    pass
 
 
 Cache Decorator
 ---------------
 
-pass
+::
+
+    @cache.cache()
+    def load(name, offset):
+        return load_from_database(name, offset)
+
+    rv = load('name', offset=10)
 
 
 Batch Fetch Multiple Cache Results
 ----------------------------------
 
-pass
+::
+
+    pass
 
 
 Cache Invalidation
 ------------------
 
-pass
+::
+
+    cache.delete('key')
+    # for decorated function
+    cache.invalidate(load, 'name', offset=10)
