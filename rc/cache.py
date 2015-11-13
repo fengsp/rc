@@ -19,17 +19,17 @@ class BaseCache(object):
 
     :param key_prefix: a prefix that should be added to all keys
     :param serializer_cls: the serialization class you want to use.
-    :param default_expiration: default expiration time that is used if no
-                               expire specified on :meth:`set`.
+    :param default_expire: default expiration time that is used if no
+                           expire specified on :meth:`set`.
     """
 
     def __init__(self, key_prefix=None, serializer_cls=None,
-                 default_expiration=3 * 24 * 3600):
+                 default_expire=3 * 24 * 3600):
         if serializer_cls is None:
             serializer_cls = JSONSerializer
         self.key_prefix = key_prefix or ''
         self.serializer_cls = serializer_cls
-        self.default_expiration = default_expiration
+        self.default_expire = default_expire
 
     def get_client(self):
         """Returns the redis client that is used for cache."""
@@ -62,7 +62,7 @@ class BaseCache(object):
         :return: Whether the key has been set
         """
         if expire is None:
-            expire = self.default_expiration
+            expire = self.default_expire
         string = self.serializer.dumps(value)
         return self.client.setex(self.key_prefix + key, expire, string)
 
@@ -112,17 +112,17 @@ class Cache(BaseCache):
     :param socket_timeout: socket timeout for the StrictRedis client.
     :param key_prefix: a prefix that should be added to all keys.
     :param serializer_cls: the serialization class you want to use.
-    :param default_expiration: default expiration time that is used if no
-                               expire specified on :meth:`set`.
+    :param default_expire: default expiration time that is used if no
+                           expire specified on :meth:`set`.
     :param redis_options: a dictionary of parameters that are useful for
                           setting other parameters to the StrictRedis client.
     """
 
     def __init__(self, host='localhost', port=6379, db=0, password=None,
                  socket_timeout=None, key_prefix=None, serializer_cls=None,
-                 default_expiration=3 * 24 * 3600, redis_options=None):
+                 default_expire=3 * 24 * 3600, redis_options=None):
         BaseCache.__init__(self, key_prefix, serializer_cls,
-                           default_expiration)
+                           default_expire)
         if redis_options is None:
             redis_options = {}
         self.host = host
