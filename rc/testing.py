@@ -21,4 +21,5 @@ class NullCache(BaseCache):
         return True
 
     def get_many(self, *keys):
+        """Always return a list of `None`"""
         return [None for key in keys]

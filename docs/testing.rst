@@ -9,7 +9,8 @@ Testing applications that use RC.
 Null Cache
 ----------
 
-pass
+Simple idea, just create one :class:`~rc.NullCache` object that does not
+cache at all when you are doing unit test.
 
 
 Fake Redis
