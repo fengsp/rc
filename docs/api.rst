@@ -8,12 +8,18 @@ API
 This page covers all interfaces of RC.
 
 
+Base Cache System API
+---------------------
+
+.. autoclass:: cache.BaseCache
+   :members:
+
+
 Cache Object
 ------------
 
 .. autoclass:: Cache
    :members:
-   :inherited-members:
 
 
 Cache Cluster Object
@@ -21,7 +27,6 @@ Cache Cluster Object
 
 .. autoclass:: CacheCluster
    :members:
-   :inherited-members:
 
 
 Serializer
@@ -64,4 +69,3 @@ Testing Objects
 
 .. autoclass:: NullCache
    :members:
-   :inherited-members:
