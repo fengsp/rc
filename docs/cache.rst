@@ -11,9 +11,9 @@ Create Cache Object
 
 Keep one cache instance around so we can do caching easily.  There are two
 types of cache in RC, if you are building a small project and one redis server
-is enough to hold your cache, go with :class:`rc.Cache`, if you are working
+is enough to hold your cache, go with :class:`~rc.Cache`, if you are working
 on a website that is accessed millions of times per day,
-:class:`rc.CacheCluster` is the ideal solution.
+:class:`~rc.CacheCluster` is the ideal solution.
 
 
 Cache Global Namespace

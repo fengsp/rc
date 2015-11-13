@@ -22,11 +22,9 @@ class PickleSerializer(BaseSerializer):
     """One serializer that uses Pickle"""
 
     def dumps(self, obj):
-        """Dumps an object into a string for redis."""
         return pickle.dumps(obj)
 
     def loads(self, string):
-        """Read a serialized object from a string."""
         if string is None:
             return
         return pickle.loads(string)
@@ -36,11 +34,9 @@ class JSONSerializer(BaseSerializer):
     """One serializer that uses JSON"""
 
     def dumps(self, obj):
-        """Dumps an object into a string for redis."""
         return json.dumps(obj)
 
     def loads(self, string):
-        """Read a serialized object from a string."""
         if string is None:
             return
         return json.loads(string)

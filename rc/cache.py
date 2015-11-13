@@ -224,10 +224,6 @@ class Cache(BaseCache):
                            **self.redis_options)
 
     def delete_many(self, *keys):
-        """Deletes multiple keys.
-
-        :return: whether all keys has been deleted
-        """
         if self.namespace:
             keys = [self.namespace + key for key in keys]
         return self.client.delete(*keys)

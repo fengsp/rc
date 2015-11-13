@@ -32,7 +32,7 @@ Here is one simple example::
 
     import json
 
-    from rc.serializer imoprt BaseSerializer
+    from rc.serializer import BaseSerializer
 
     class IterEncoder(json.JSONEncoder):
 

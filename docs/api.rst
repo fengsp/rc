@@ -11,12 +11,16 @@ This page covers all interfaces of RC.
 Base Cache System API
 ---------------------
 
-.. autoclass:: cache.BaseCache
+.. currentmodule:: rc.cache
+
+.. autoclass:: BaseCache
    :members:
 
 
 Cache Object
 ------------
+
+.. currentmodule:: rc
 
 .. autoclass:: Cache
    :members:
