@@ -196,6 +196,7 @@ class Cache(BaseCache):
     :param socket_timeout: socket timeout for the StrictRedis client.
     :param namespace: a prefix that should be added to all keys.
     :param serializer_cls: the serialization class you want to use.
+                           By default, it is :class:`rc.JSONSerializer`.
     :param default_expire: default expiration time that is used if no
                            expire specified on :meth:`set`.
     :param redis_options: a dictionary of parameters that are useful for
