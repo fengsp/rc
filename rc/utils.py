@@ -4,6 +4,8 @@ import inspect
 def u_(s):
     if isinstance(s, unicode):
         return s
+    if not isinstance(s, str):
+        s = str(s)
     return unicode(s, 'utf-8')
 
 

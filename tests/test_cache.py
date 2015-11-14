@@ -77,7 +77,8 @@ def test_cache_decorator_basic_apis(redis_unix_socket_path):
     class Foo(object):
         @cache.cache()
         def load_method(self, name, offset):
-            return ' '.join(('load', name, offset))
+            return ' '.join(('load', name, str(offset)))
     foo = Foo()
-    assert foo.load_method('name', 'offset') == 'load name offset'
-    assert foo.load_method('name', offset='offset') == 'load name offset'
+    assert foo.load_method('name', 10) == 'load name 10'
+    assert foo.load_method('name', offset=10) == 'load name 10'
+    assert cache.invalidate(foo.load_method, 'name', 10)
