@@ -223,6 +223,15 @@ class Cache(BaseCache):
                            socket_timeout=self.socket_timeout,
                            **self.redis_options)
 
+    def set_many(self, mapping, expire=None):
+        if expire is None:
+            expire = self.default_expire
+        pipe = self.client.pipeline()
+        for key, value in mapping.iteritems():
+            string = self.serializer.dumps(value)
+            pipe.setex(self.namespace + key, expire, string)
+        return all(pipe.execute())
+
     def delete_many(self, *keys):
         if self.namespace:
             keys = [self.namespace + key for key in keys]
