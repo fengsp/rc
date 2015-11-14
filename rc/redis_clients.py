@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import socket
 import errno
+from itertools import izip
 
 from redis import StrictRedis
 from redis.client import list_or_args
@@ -53,16 +54,37 @@ class RedisClusterClient(BaseRedisClient):
         names = [name]
         return self.execute_command('DEL', *names)
 
+    def mdelete(self, *names):
+        commands = []
+        for name in names:
+            commands.append(('DEL', name))
+        results = self._execute_multi_command_with_poller('DEL', commands)
+        return sum(results.values())
+
+    def msetex(self, mapping, time):
+        commands = []
+        for name, value in mapping.iteritems():
+            commands.append(('SETEX', name, time, value))
+        results = self._execute_multi_command_with_poller('SETEX', commands)
+        return all(results.values())
+
     def mget(self, keys, *args):
         args = list_or_args(keys, args)
+        commands = []
+        for arg in args:
+            commands.append(('MGET', arg))
+        results = self._execute_multi_command_with_poller('MGET', commands)
+        return [results[k] for k in args]
+
+    def _execute_multi_command_with_poller(self, command_name, commands):
         connection_pool = self.connection_pool
         router = connection_pool.cluster.router
-        # put keys to the corresponding mget buffer
+        # put command to the corresponding command buffer
         bufs = {}
-        for arg in args:
-            host_name = router.get_host_for_key(arg)
-            buf = self._get_mget_buffer(bufs, host_name)
-            buf.enqueue_key(arg)
+        for args in commands:
+            host_name = router.get_host_for_key(args[1])
+            buf = self._get_command_buffer(bufs, command_name, host_name)
+            buf.enqueue_command(args)
         # poll all results back with max concurrency
         results = {}
         remaining_buf_items = bufs.items()
@@ -82,29 +104,30 @@ class RedisClusterClient(BaseRedisClient):
         # clean
         for _, buf in bufs.iteritems():
             connection_pool.release(buf.connection)
-        return [results[k] for k in args]
+        return results
 
-    def _get_mget_buffer(self, bufs, host_name):
+    def _get_command_buffer(self, bufs, command_name, host_name):
         buf = bufs.get(host_name)
         if buf is not None:
             return buf
         connection_pool = self.connection_pool
-        connection = connection_pool.get_connection('MGET', host_name)
-        buf = MGETBuffer(host_name, connection)
+        connection = connection_pool.get_connection(command_name, host_name)
+        buf = CommandBuffer(host_name, connection, command_name)
         bufs[host_name] = buf
         return buf
 
 
-class MGETBuffer(object):
-    """The mget buffer is used for sending and fetching MGET command related
+class CommandBuffer(object):
+    """The command buffer is used for sending and fetching Multi command related
     data.
     """
 
-    def __init__(self, host_name, connection):
+    def __init__(self, host_name, connection, command_name):
         self.host_name = host_name
         self.connection = connection
-        self.keys = []
-        self.pending_keys = []
+        self.command_name = command_name
+        self.commands = []
+        self.pending_commands = []
         self._send_buf = []
 
         connection.connect()
@@ -113,8 +136,8 @@ class MGETBuffer(object):
         if self.connection._sock is None:
             raise ValueError('Can not operate on closed file.')
 
-    def enqueue_key(self, key):
-        self.keys.append(key)
+    def enqueue_command(self, command):
+        self.commands.append(command)
 
     def fileno(self):
         self.assert_open()
@@ -122,7 +145,7 @@ class MGETBuffer(object):
 
     @property
     def has_pending_request(self):
-        return self._send_buf or self.keys
+        return self._send_buf or self.commands
 
     def _try_send_buffer(self):
         sock = self.connection._sock
@@ -161,13 +184,26 @@ class MGETBuffer(object):
             self.connection.disconnect()
             raise
 
+    def batch_commands(self, commands):
+        args = []
+        for command in commands:
+            command_args = command[1:]
+            args.extend(command_args)
+        if args:
+            return [(self.command_name,) + tuple(args)]
+        else:
+            return []
+
     def send_pending_request(self):
         self.assert_open()
-        if self.keys:
-            args = ('MGET',) + tuple(self.keys)
-            self._send_buf.extend(self.connection.pack_command(*args))
-            self.pending_keys = self.keys
-            self.keys = []
+        if self.commands:
+            if self.command_name in ('MGET', 'DEL'):
+                commands = self.batch_commands(self.commands)
+            else:
+                commands = self.commands
+            self._send_buf.extend(self.connection.pack_commands(commands))
+            self.pending_commands = self.commands
+            self.commands = []
         if not self._send_buf:
             return True
         self._try_send_buffer()
@@ -177,5 +213,14 @@ class MGETBuffer(object):
         self.assert_open()
         if self.has_pending_request:
             raise RuntimeError('There are pending requests.')
-        rv = client.parse_response(self.connection, 'MGET')
-        return dict(zip(self.pending_keys, rv))
+        if self.command_name in ('MGET', 'DEL'):
+            rv = client.parse_response(self.connection, self.command_name)
+        else:
+            rv = []
+            for i in xrange(len(self.pending_commands)):
+                rv.append(client.parse_response(
+                    self.connection, self.command_name))
+        if self.command_name == 'DEL':
+            rv = [1] * rv + [0] * (len(self.pending_commands) - rv)
+        pending_keys = map(lambda c: c[1], self.pending_commands)
+        return dict(izip(pending_keys, rv))
