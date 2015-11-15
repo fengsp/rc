@@ -17,6 +17,15 @@ Base Cache System API
    :members:
 
 
+Cluster Host Config
+-------------------
+
+.. currentmodule:: rc.redis_cluster
+
+.. autoclass:: HostConfig
+   :members:
+
+
 Cache Object
 ------------
 

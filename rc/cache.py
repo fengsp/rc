@@ -23,7 +23,7 @@ class BaseCache(object):
     :param namespace: a prefix that should be added to all keys
     :param serializer_cls: the serialization class you want to use.
     :param default_expire: default expiration time that is used if no
-                           expire specified on :meth:`set`.
+                           expire specified on :meth:`~rc.cache.BaseCache.set`.
     """
 
     def __init__(self, namespace=None, serializer_cls=None,
@@ -262,7 +262,7 @@ class CacheCluster(BaseCache):
     :param router_options: a dictionary of parameters that is useful for
                            setting other parameters of router
     :param pool_cls: use this to override the redis connection pool class,
-                     default to be :class:`~redis.connection.ConnectionPool`
+                     default to be :class:`~redis.ConnectionPool`
     :param pool_options: a dictionary of parameters that is useful for
                          setting other parameters of pool
     :param max_concurrency: defines how many parallel queries can happen
