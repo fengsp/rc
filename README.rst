@@ -13,7 +13,7 @@ For full documentation see `rc.readthedocs.org <http://rc.readthedocs.org/>`_.
 Installation
 ------------
 
-::
+.. code-block:: bash
     
     $ pip install rc
 
@@ -21,7 +21,9 @@ Installation
 Quickstart
 ----------
 
-A minimal cache example looks like this::
+A minimal cache example looks like this:
+
+.. code-block:: python
 
     from rc import Cache
 
@@ -30,7 +32,9 @@ A minimal cache example looks like this::
     assert cache.get('key') == 'value'
     assert cache.get('foo') is None
 
-A cache cluster use a redis cluster as backend::
+A cache cluster use a redis cluster as backend:
+
+.. code-block:: python
 
     from rc import CacheCluster
 
@@ -41,7 +45,9 @@ A cache cluster use a redis cluster as backend::
         'cache04': {'host': 'redis-host04', 'db': 1},
     })
 
-Cache decorator::
+Cache decorator:
+
+.. code-block:: python
 
     @cache.cache()
     def load(name, offset):
@@ -49,11 +55,15 @@ Cache decorator::
 
     rv = load('name', offset=10)
 
-Batch fetch multiple cache results::
+Batch fetch multiple cache results:
+
+.. code-block:: python
 
     pass
 
-Cache invalidation::
+Cache invalidation:
+
+.. code-block:: python
 
     cache.delete('key')
     # for decorated function
