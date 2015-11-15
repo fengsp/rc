@@ -1,6 +1,9 @@
 RC
 ==
 
+.. image:: https://github.com/fengsp/rc/blob/master/docs/_static/rc.png?raw=true
+   :alt: rc: the redis cache
+
 rc - the redis cache.
 
 - easy to use

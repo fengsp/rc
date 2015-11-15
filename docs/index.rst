@@ -1,6 +1,10 @@
 Welcome to RC
 =============
 
+.. image:: _static/rc.png
+   :alt: RC: the redis cache
+   :class: floatingflask
+
 Welcome to rc's documentation.  Caching can be fun and easy.
 
 
