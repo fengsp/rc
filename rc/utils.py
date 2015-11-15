@@ -28,7 +28,7 @@ def generate_key_for_cached_func(key_prefix, func, *args, **kwargs):
     if kwargs:
         kwargs.sort(key=lambda t: t[0])
         kwargs = map(lambda t: (u_(t[0]), u_(t[1])), kwargs)
-        kwargs = map(lambda t: u','.join(t), kwargs)
+        kwargs = map(lambda t: u'='.join(t), kwargs)
     # handle positional arguments
     args = map(lambda arg: u_(arg), args)
     # join them together
