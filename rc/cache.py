@@ -206,8 +206,7 @@ class Cache(BaseCache):
     def __init__(self, host='localhost', port=6379, db=0, password=None,
                  socket_timeout=None, namespace=None, serializer_cls=None,
                  default_expire=3 * 24 * 3600, redis_options=None):
-        BaseCache.__init__(self, namespace, serializer_cls,
-                           default_expire)
+        BaseCache.__init__(self, namespace, serializer_cls, default_expire)
         if redis_options is None:
             redis_options = {}
         self.host = host
@@ -239,7 +238,72 @@ class Cache(BaseCache):
 
 
 class CacheCluster(BaseCache):
-    """The core object behind rc."""
+    """The a redis cluster as backend.
 
-    def __init__(self):
-        pass
+    Basic example::
+
+        cache = CacheCluster({
+            0: {'port': 6379},
+            1: {'port': 6479},
+            2: {'port': 6579},
+            3: {'port': 6679},
+        })
+
+    :param hosts: a dictionary of hosts that maps the host host_name to
+                  configuration parameters.  The parameters are used to
+                  construct a :class:`~rc.redis_cluster.HostConfig`.
+    :param namespace: a prefix that should be added to all keys.
+    :param serializer_cls: the serialization class you want to use.
+                           By default, it is :class:`~rc.JSONSerializer`.
+    :param default_expire: default expiration time that is used if no
+                           expire specified on :meth:`set`.
+    :param router_cls: use this to override the redis router class,
+                       default to be :class:`~rc.RedisCRC32HashRouter`.
+    :param router_options: a dictionary of parameters that is useful for
+                           setting other parameters of router
+    :param pool_cls: use this to override the redis connection pool class,
+                     default to be :class:`~redis.connection.ConnectionPool`
+    :param pool_options: a dictionary of parameters that is useful for
+                         setting other parameters of pool
+    :param max_concurrency: defines how many parallel queries can happen
+                            at the same time
+    :param poller_timeout: for multi key operations we use a select loop as
+                           the parallel query implementation, use this
+                           to specify timeout for the underlying pollers
+                           (select/poll/kqueue/epoll).
+    """
+
+    def __init__(self, hosts, namespace=None, serializer_cls=None,
+                 default_expire=3 * 24 * 3600, router_cls=None,
+                 router_options=None, pool_cls=None, pool_options=None,
+                 max_concurrency=64, poller_timeout=1.0):
+        BaseCache.__init__(self, namespace, serializer_cls, default_expire)
+        self.hosts = hosts
+        self.router_cls = router_cls
+        self.router_options = router_options
+        self.pool_cls = pool_cls
+        self.pool_options = pool_options
+        self.max_concurrency = max_concurrency
+        self.poller_timeout = poller_timeout
+
+    def get_client(self):
+        redis_cluster = RedisCluster(self.hosts, router_cls=self.router_cls,
+                                     router_options=self.router_options,
+                                     pool_cls=self.pool_cls,
+                                     pool_options=self.pool_options)
+        return redis_cluster.get_client(self.max_concurrency,
+                                        self.poller_timeout)
+
+    def set_many(self, mapping, expire=None):
+        if expire is None:
+            expire = self.default_expire
+        string_mapping = {}
+        for key, value in mapping.iteritems():
+            string = self.serializer.dumps(value)
+            string_mapping[self.namespace + key] = string
+        return self.client.msetex(string_mapping, expire)
+
+    def delete_many(self, *keys):
+        if self.namespace:
+            keys = [self.namespace + key for key in keys]
+        return self.client.mdelete(*keys)
