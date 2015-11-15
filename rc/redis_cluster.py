@@ -43,27 +43,34 @@ class RedisCluster(object):
     the redis nodes.
 
     :param hosts: a dictionary of hosts that maps the host host_name to
-                  configuration parameters.  The parameters are ...
-    :param router_cls: pass
-    :param pool_cls: pass
-    :param pool_options: pass
+                  configuration parameters.  The parameters are used to
+                  construct a :class:`~rc.redis_cluster.HostConfig`.
+    :param router_cls: use this to override the redis router class
+    :param router_options: a dictionary of parameters that is useful for
+                           setting other parameters of router
+    :param pool_cls: use this to override the redis connection pool class
+    :param pool_options: a dictionary of parameters that is useful for
+                         setting other parameters of pool
     """
 
-    def __init__(self, hosts, router_cls=None, pool_cls=None,
-                 pool_options=None):
+    def __init__(self, hosts, router_cls=None, router_options=None,
+                 pool_cls=None, pool_options=None):
         if router_cls is None:
             router_cls = RedisCRC32HashRouter
         if pool_cls is None:
             pool_cls = ConnectionPool
         if pool_options is None:
             pool_options = {}
+        if router_options is None:
+            router_options = {}
         self.router_cls = router_cls
+        self.router_options = router_options
         self.pool_cls = pool_cls
         self.pool_options = pool_options
         self.hosts = {}
         for host_name, host_config in hosts.iteritems():
             self.hosts[host_name] = HostConfig(host_name, **host_config)
-        self.router = self.router_cls(self.hosts)
+        self.router = self.router_cls(self.hosts, **router_options)
         #: connection pools of all hosts
         self._pools = {}
 
