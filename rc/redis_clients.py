@@ -24,11 +24,11 @@ class RedisClient(BaseRedisClient):
 
 class RedisClusterClient(BaseRedisClient):
 
-    def __init__(self, connection_pool, max_concurrency=None):
+    def __init__(self, connection_pool, max_concurrency=64,
+                 poller_timeout=1.0):
         BaseRedisClient.__init__(self, connection_pool=connection_pool)
-        if max_concurrency is None:
-            max_concurrency = 64
         self.max_concurrency = max_concurrency
+        self.poller_timeout = poller_timeout
 
     def execute_command(self, *args, **options):
         command_name = args[0]
@@ -93,7 +93,7 @@ class RedisClusterClient(BaseRedisClient):
             remaining_buf_items = remaining_buf_items[self.max_concurrency:]
             bufs_poll = poller(buf_items)
             while bufs_poll:
-                rlist, wlist = bufs_poll.poll()
+                rlist, wlist = bufs_poll.poll(self.poller_timeout)
                 for rbuf in rlist:
                     if not rbuf.has_pending_request:
                         results.update(rbuf.fetch_response(self))
@@ -118,8 +118,8 @@ class RedisClusterClient(BaseRedisClient):
 
 
 class CommandBuffer(object):
-    """The command buffer is used for sending and fetching Multi command related
-    data.
+    """The command buffer is used for sending and fetching multi key command
+    related data.
     """
 
     def __init__(self, host_name, connection, command_name):

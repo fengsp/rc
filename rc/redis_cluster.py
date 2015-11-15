@@ -42,8 +42,11 @@ class RedisCluster(object):
     """The redis cluster is the object that holds the connection pools to
     the redis nodes.
 
-    `hosts` is a dictionary of hosts that maps the host host_name to
-    configuration parameters.  The parameters are ...
+    :param hosts: a dictionary of hosts that maps the host host_name to
+                  configuration parameters.  The parameters are ...
+    :param router_cls: pass
+    :param pool_cls: pass
+    :param pool_options: pass
     """
 
     def __init__(self, hosts, router_cls=None, pool_cls=None,
@@ -89,10 +92,19 @@ class RedisCluster(object):
             self._pools[host_name] = pool
             return pool
 
-    def get_client(self):
+    def get_client(self, max_concurrency=64, poller_timeout=1.0):
         """Returns a cluster client.  This client can automatically route
-        the requests to the corresponding node."""
-        return RedisClusterClient(RedisClusterPool(self))
+        the requests to the corresponding node.
+
+        :param max_concurrency: defines how many parallel queries can happen
+                                at the same time
+        :param poller_timeout: for multi key commands we use a select loop as
+                               the parallel query implementation, use this
+                               to specify timeout for underlying pollers
+                               (select/poll/kqueue/epoll).
+        """
+        return RedisClusterClient(
+            RedisClusterPool(self), max_concurrency, poller_timeout)
 
 
 class RedisClusterPool(object):

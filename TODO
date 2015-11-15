@@ -4,5 +4,3 @@ TODO
 - compressor support
 - cache slave support
 - key mangler support
-- batch setex/delete support
-- batch mode timeout (idea: change to poller timeout?)
