@@ -22,15 +22,25 @@ What we are doing here?
 
 1. First we imported the :class:`~rc.Cache` class.  An instance of this class
    can be used to cache things with a single redis server.
-2. pass
+2. We create one cache instance.
+3. We set and get things based on a key.
 
 
 Build A Cache Cluster
 ---------------------
 
+A cache cluster use a redis cluster as backend.
+
 ::
 
-    pass
+    from rc import CacheCluster
+
+    cache = CacheCluster({
+        'cache01': {'host': 'redis-host01'},
+        'cache02': {'host': 'redis-host02'},
+        'cache03': {'host': 'redis-host03'},
+        'cache04': {'host': 'redis-host04', 'db': 1},
+    })
 
 
 Cache Decorator
