@@ -34,6 +34,7 @@ def test_cache_basic_apis(redis_unix_socket_path):
     assert cache.get('key') is None
     assert cache.set('key', ['value'])
     assert cache.get('key') == ['value']
+    assert cache.get_many('key') == [['value']]
     assert cache.delete('key')
     assert cache.get('key') is None
 
