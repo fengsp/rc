@@ -129,7 +129,11 @@ a single post, view all posts.  The code explains itself::
     @app.route('/')
     def show_all_posts():
         all_post_ids = Post.get_all_ids()
-        all_posts = [Post.get_by_id(post_id) for post_id in all_post_ids]
+        all_posts = []
+        with cache.batch_mode():
+            for post_id in all_post_ids:
+                all_posts.append(Post.get_by_id(post_id))
+        all_posts = [p.value for p in all_posts]
         return render_template_string(ALL_POSTS_TEMPLATE, all_posts=all_posts)
 
 
