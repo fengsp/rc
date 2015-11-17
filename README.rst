@@ -34,7 +34,8 @@ A minimal cache example looks like this:
     assert cache.set('key', 'value')
     assert cache.get('key') == 'value'
     assert cache.get('foo') is None
-    assert cache.get_many('key', 'foo') == ['value', None]
+    assert cache.set('list', [1])
+    assert cache.get('list') == [1]
 
 A cache cluster use a redis cluster as backend:
 
@@ -63,6 +64,8 @@ Batch fetch multiple cache results:
 
 .. code-block:: python
 
+    assert cache.get_many('key', 'foo') == ['value', None]
+    # for decorated function
     pass
 
 Cache invalidation:

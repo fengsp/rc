@@ -17,7 +17,8 @@ A minimal cache example looks like this::
     assert cache.set('key', 'value')
     assert cache.get('key') == 'value'
     assert cache.get('foo') is None
-    assert cache.get_many('key', 'foo') == ['value', None]
+    assert cache.set('list', [1])
+    assert cache.get('list') == [1]
 
 What we are doing here?
 
@@ -61,6 +62,8 @@ Batch Fetch Multiple Cache Results
 
 ::
 
+    assert cache.get_many('key', 'foo') == ['value', None]
+    # for decorated function
     pass
 
 

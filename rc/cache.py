@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
 import functools
+from itertools import izip
 
 from rc.redis_clients import RedisClient
 from rc.redis_cluster import RedisCluster
 from rc.serializer import JSONSerializer
 from rc.utils import generate_key_for_cached_func
+from rc.promise import Promise
+
+
+#: Running mode for cache
+NORMAL_MODE = 0
+BATCH_MODE = 1
 
 
 class cached_property(object):
@@ -33,6 +40,8 @@ class BaseCache(object):
         self.namespace = namespace or ''
         self.serializer_cls = serializer_cls
         self.default_expire = default_expire
+        self._running_mode = NORMAL_MODE
+        self._pending_operations = []
 
     def get_client(self):
         """Returns the redis client that is used for cache."""
@@ -48,12 +57,20 @@ class BaseCache(object):
         """Returns the serializer instance that is used for cache."""
         return self.serializer_cls()
 
+    def _raw_get(self, key):
+        return self.client.get(self.namespace + key)
+
+    def _raw_get_many(self, *keys):
+        if self.namespace:
+            keys = [self.namespace + key for key in keys]
+        return self.client.mget(keys)
+
     def get(self, key):
         """Returns the value for the cache key, otherwise `None` is returned.
 
         :param key: cache key
         """
-        return self.serializer.loads(self.client.get(self.namespace + key))
+        return self.serializer.loads(self._raw_get(key))
 
     def set(self, key, value, expire=None):
         """Adds or overwrites key/value to the cache.   The value expires in
@@ -79,9 +96,7 @@ class BaseCache(object):
 
     def get_many(self, *keys):
         """Returns the a list of values for the cache keys."""
-        if self.namespace:
-            keys = [self.namespace + key for key in keys]
-        return [self.serializer.loads(s) for s in self.client.mget(keys)]
+        return [self.serializer.loads(s) for s in self._raw_get_many(*keys)]
 
     def set_many(self, mapping, expire=None):
         """Sets multiple keys and values using dictionary.
@@ -141,9 +156,14 @@ class BaseCache(object):
             def wrapper(*args, **kwargs):
                 cache_key = generate_key_for_cached_func(
                     key_prefix, f, *args, **kwargs)
-                rv = self.get(cache_key)
+                if self._running_mode == BATCH_MODE:
+                    promise = Promise()
+                    self._pending_operations.append(
+                        (f, args, kwargs, promise, cache_key, expire))
+                    return promise
+                rv = self._raw_get(cache_key)
                 if rv is not None:
-                    return rv
+                    return self.serializer.loads(rv)
                 rv = f(*args, **kwargs)
                 self.set(cache_key, rv, expire)
                 return rv
@@ -183,6 +203,46 @@ class BaseCache(object):
         cache_key = generate_key_for_cached_func(
             key_prefix, func, *args, **kwargs)
         return self.delete(cache_key)
+
+    def batch_mode(self):
+        """Returns a context manager for cache batch mode.  This is used
+        to batch fetch results of cache decorated functions.  All results
+        returned by cache decorated function will be
+        :class:`~rc.promise.Promise` object.  This context manager runs the
+        batch fetch and then resolves all promises in the end.  Example::
+
+            results = []
+            with cache.batch_mode():
+                for i in range(10):
+                    results.append(get_result(i))
+            results = map(lambda r: r.value, results)
+
+        .. note::
+
+            When you are using rc on this mode, rc is not thread safe.
+        """
+        return BatchManager(self)
+
+    def batch(self, cancel=False):
+        if self._running_mode != BATCH_MODE:
+            raise RuntimeError('You have to batch on batch mode.')
+        pending_operations = self._pending_operations
+        self._pending_operations = []
+        self._running_mode = NORMAL_MODE
+        if cancel:
+            return
+        cache_keys = []
+        for f, args, kwargs, promise, cache_key, expire in pending_operations:
+            cache_keys.append(cache_key)
+        cache_results = self._raw_get_many(*cache_keys)
+        for rv, (func, args, kwargs, promise, cache_key, expire) in izip(
+                cache_results, pending_operations):
+            if rv is not None:
+                promise.resolve(self.serializer.loads(rv))
+            else:
+                rv = func(*args, **kwargs)
+                self.set(cache_key, rv, expire)
+                promise.resolve(rv)
 
 
 class Cache(BaseCache):
@@ -307,3 +367,20 @@ class CacheCluster(BaseCache):
         if self.namespace:
             keys = [self.namespace + key for key in keys]
         return self.client.mdelete(*keys)
+
+
+class BatchManager(object):
+    """Context manager that helps us with batching."""
+
+    def __init__(self, cache):
+        self.cache = cache
+
+    def __enter__(self):
+        self.cache._running_mode = BATCH_MODE
+        return self.cache
+
+    def __exit__(self, exc_type, exc_value, tb):
+        if exc_type is not None:
+            self.cache.batch(cancel=True)
+        else:
+            self.cache.batch()
