@@ -96,6 +96,8 @@ class BaseCache(object):
 
     def get_many(self, *keys):
         """Returns the a list of values for the cache keys."""
+        if not keys:
+            return []
         return [self.serializer.loads(s) for s in self._raw_get_many(*keys)]
 
     def set_many(self, mapping, expire=None):
@@ -106,6 +108,8 @@ class BaseCache(object):
         :param expire: expiration time
         :return: whether all keys has been set
         """
+        if not mapping:
+            return True
         rv = True
         for key, value in mapping.iteritems():
             if not self.set(key, value, expire):
@@ -117,6 +121,8 @@ class BaseCache(object):
 
         :return: whether all keys has been deleted
         """
+        if not keys:
+            return True
         return all(self.delete(key) for key in keys)
 
     def cache(self, key_prefix=None, expire=None):
@@ -283,6 +289,8 @@ class Cache(BaseCache):
                            **self.redis_options)
 
     def set_many(self, mapping, expire=None):
+        if not mapping:
+            return True
         if expire is None:
             expire = self.default_expire
         pipe = self.client.pipeline()
@@ -292,6 +300,8 @@ class Cache(BaseCache):
         return all(pipe.execute())
 
     def delete_many(self, *keys):
+        if not keys:
+            return True
         if self.namespace:
             keys = [self.namespace + key for key in keys]
         return self.client.delete(*keys)
@@ -355,6 +365,8 @@ class CacheCluster(BaseCache):
                                         self.poller_timeout)
 
     def set_many(self, mapping, expire=None):
+        if not mapping:
+            return True
         if expire is None:
             expire = self.default_expire
         string_mapping = {}
@@ -364,6 +376,8 @@ class CacheCluster(BaseCache):
         return self.client.msetex(string_mapping, expire)
 
     def delete_many(self, *keys):
+        if not keys:
+            return True
         if self.namespace:
             keys = [self.namespace + key for key in keys]
         return self.client.mdelete(*keys)

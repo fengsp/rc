@@ -30,6 +30,9 @@ def test_cache_basic_apis(redis_unix_socket_path):
     assert cache.get_many('key1', 'key2') == ['value1', 'value2']
     assert cache.delete_many('key1', 'key2')
     assert cache.get_many('key1', 'key2') == [None, None]
+    assert cache.get_many() == []
+    assert cache.set_many({})
+    assert cache.delete_many()
 
     assert cache.get('key') is None
     assert cache.set('key', ['value'])
@@ -98,6 +101,9 @@ def test_cache_cluster_basic_apis(redis_hosts):
     assert cache.get_many('key1', 'key2') == ['value1', 'value2']
     assert cache.delete_many('key1', 'key2')
     assert cache.get_many('key1', 'key2') == [None, None]
+    assert cache.get_many() == []
+    assert cache.set_many({})
+    assert cache.delete_many()
 
     assert cache.get('key') is None
     assert cache.set('key', ['value'])
