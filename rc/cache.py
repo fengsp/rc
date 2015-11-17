@@ -61,6 +61,8 @@ class BaseCache(object):
         return self.client.get(self.namespace + key)
 
     def _raw_get_many(self, *keys):
+        if not keys:
+            return []
         if self.namespace:
             keys = [self.namespace + key for key in keys]
         return self.client.mget(keys)
@@ -96,8 +98,6 @@ class BaseCache(object):
 
     def get_many(self, *keys):
         """Returns the a list of values for the cache keys."""
-        if not keys:
-            return []
         return [self.serializer.loads(s) for s in self._raw_get_many(*keys)]
 
     def set_many(self, mapping, expire=None):

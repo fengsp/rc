@@ -126,19 +126,19 @@ def test_cache_cluster_namespace(redis_hosts):
     assert cache02.get('key') is None
 
 
-def test_cache_batch_mode(redis_hosts):
-    cache = CacheCluster(redis_hosts)
+def test_cache_batch_mode(redis_unix_socket_path):
+    cache = Cache(redis_options={'unix_socket_path': redis_unix_socket_path})
     @cache.cache()
-    def batch_test_func(value):
+    def cache_batch_test_func(value):
         return value
 
-    for i in range(5):
-        assert batch_test_func(i) == i
+    with cache.batch_mode():
+        pass
 
     results = []
     with cache.batch_mode():
         for i in range(10):
-            rv = batch_test_func(i)
+            rv = cache_batch_test_func(i)
             assert rv.is_pending
             assert rv.value is None
             results.append(rv)
@@ -147,4 +147,28 @@ def test_cache_batch_mode(redis_hosts):
         assert rv.value == i
 
     for i in range(20):
-        assert batch_test_func(i) == i
+        assert cache_batch_test_func(i) == i
+
+
+def test_cache_cluster_batch_mode(redis_hosts):
+    cache = CacheCluster(redis_hosts)
+    @cache.cache()
+    def cluster_batch_test_func(value):
+        return value
+
+    for i in range(5):
+        assert cluster_batch_test_func(i) == i
+
+    results = []
+    with cache.batch_mode():
+        for i in range(10):
+            rv = cluster_batch_test_func(i)
+            assert rv.is_pending
+            assert rv.value is None
+            results.append(rv)
+    for i, rv in enumerate(results):
+        assert rv.is_resolved
+        assert rv.value == i
+
+    for i in range(20):
+        assert cluster_batch_test_func(i) == i
