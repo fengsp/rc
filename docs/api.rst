@@ -74,6 +74,9 @@ Testing Objects
 .. autoclass:: NullCache
    :members:
 
+.. autoclass:: FakeRedisCache
+   :members:
+
 
 Cluster Host Config
 -------------------

@@ -2,7 +2,7 @@
 import pytest
 
 from rc.cache import Cache, CacheCluster
-from rc.testing import NullCache
+from rc.testing import NullCache, FakeRedisCache
 
 
 def test_null_cache():
@@ -11,6 +11,17 @@ def test_null_cache():
         cache.client
     assert cache.get('key') is None
     assert cache.set('key', 'value')
+    assert cache.delete('key')
+    assert cache.get_many('key1', 'key2') == [None, None]
+    assert cache.set_many({'key1': 'value1', 'key2': 'value2'})
+    assert cache.delete_many('key1', 'key2')
+
+
+def test_fakeredis_cache():
+    cache = FakeRedisCache()
+    assert cache.get('key') is None
+    assert cache.set('key', 'value')
+    assert cache.get('key') == 'value'
     assert cache.delete('key')
     assert cache.get_many('key1', 'key2') == [None, None]
     assert cache.set_many({'key1': 'value1', 'key2': 'value2'})

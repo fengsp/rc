@@ -12,7 +12,7 @@ from rc.cache import Cache, CacheCluster
 from rc.serializer import BaseSerializer, JSONSerializer, PickleSerializer
 from rc.redis_router import BaseRedisRouter, RedisCRC32HashRouter
 from rc.redis_router import RedisConsistentHashRouter
-from rc.testing import NullCache
+from rc.testing import NullCache, FakeRedisCache
 
 
 __version__ = '0.1'
@@ -25,5 +25,5 @@ __all__ = [
 
     'BaseRedisRouter', 'RedisCRC32HashRouter', 'RedisConsistentHashRouter',
 
-    'NullCache',
+    'NullCache', 'FakeRedisCache',
 ]

@@ -16,4 +16,11 @@ cache at all when you are doing unit test.
 Fake Redis
 ----------
 
-pass
+Use a fake redis as backend, this is existing for testing purposes only.
+It depends on the `fakeredis`_ library, install it first::
+
+    $ pip install fakeredis
+
+.. _fakeredis: https://github.com/jamesls/fakeredis
+
+For more details, check out :class:`~rc.FakeRedisCache`.
