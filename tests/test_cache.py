@@ -139,6 +139,7 @@ def test_cache_cluster_namespace(redis_hosts):
 
 def test_cache_batch_mode(redis_unix_socket_path):
     cache = Cache(redis_options={'unix_socket_path': redis_unix_socket_path})
+
     @cache.cache()
     def cache_batch_test_func(value):
         return value
@@ -163,6 +164,7 @@ def test_cache_batch_mode(redis_unix_socket_path):
 
 def test_cache_cluster_batch_mode(redis_hosts):
     cache = CacheCluster(redis_hosts)
+
     @cache.cache()
     def cluster_batch_test_func(value):
         return value
