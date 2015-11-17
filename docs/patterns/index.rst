@@ -9,4 +9,3 @@ This part contains some snippets and patterns for caching.
    :maxdepth: 2
 
    memory_cache
-   node
