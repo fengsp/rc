@@ -99,6 +99,13 @@ expiration time.
 Cache Batch Fetching
 --------------------
 
-- how to do batch fetch
-- how it is done for a cache
-- for a cache cluster we do it in parallel
+For a simple key usage, you just need :meth:`~rc.cache.BaseCache.get_many`,
+here is one simple example::
+
+    assert cache.get_many('key', 'foo') == ['value', None]
+
+For cache decorated function, you need :meth:`~rc.cache.BaseCache.batch_mode`,
+check the api for more details.  Basically we record all functions you want
+to execute and return a :class:`~rc.promise.Promise` object.  When you leaves
+the batch context manager, the promise is resolved and the result value is
+there for you.

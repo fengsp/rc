@@ -63,8 +63,20 @@ Batch Fetch Multiple Cache Results
 ::
 
     assert cache.get_many('key', 'foo') == ['value', None]
-    # for decorated function
-    pass
+
+    # for cache decorated function
+    @cache.cache()
+    def cached_func(param):
+        return param
+
+    results = []
+    # with the context manager, the function
+    # is executed and return a promise
+    with cache.batch_mode():
+        for i in range(10):
+            results.append(cached_func(i))
+    for i, rv in enumerate(results):
+        assert rv.value == i
 
 
 Cache Invalidation
