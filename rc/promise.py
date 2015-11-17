@@ -41,13 +41,13 @@ class Promise(object):
         """Return `True` if the promise is pending."""
         return self._state == PENDING_STATE
 
-    def on_resolve(self, on_resolve=None):
+    def then(self, on_resolve=None):
         """Add one callback that is called with the resolved value when the
         promise is resolved, and return the promise itself.  One demo::
 
             p = Promise()
             d = {}
-            p.on_resolve(lambda v: d.setdefault('key', v))
+            p.then(lambda v: d.setdefault('key', v))
             p.resolve('value')
             assert p.result == 'value'
             assert d['key'] == 'value'

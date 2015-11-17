@@ -16,10 +16,10 @@ def test_promise_resolve():
         p.resolve('value again')
 
 
-def test_promise_on_resolve():
+def test_promise_then():
     p = Promise()
     d = {}
-    v = p.on_resolve(lambda v: d.setdefault('key', v))
+    v = p.then(lambda v: d.setdefault('key', v))
     p.resolve('value')
     assert v.result == 'value'
     assert d['key'] == 'value'
