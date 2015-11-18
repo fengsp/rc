@@ -17,7 +17,7 @@ concurrently, which means much higher performance.
 
 It uses the `redis`_ server, which is a in-memory key-value data structure
 server.  It does not implement any other backends like filesystem and does not
-indend to do so.  Mostly we want to use a key-value server like redis, if you
+intend to do so.  Mostly we want to use a key-value server like redis, if you
 have special needs, it is easy to write one cache decorator that stores
 everything in memory using a dict or you can check out other libraries.
 
