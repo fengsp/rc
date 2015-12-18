@@ -168,11 +168,11 @@ class BaseCache(object):
                         (f, args, kwargs, promise, cache_key, expire))
                     return promise
                 rv = self._raw_get(cache_key)
-                if rv is not None:
-                    return self.serializer.loads(rv)
-                rv = f(*args, **kwargs)
-                self.set(cache_key, rv, expire)
-                return rv
+                if rv is None:
+                    value = f(*args, **kwargs)
+                    self.set(cache_key, value, expire)
+                    rv = self.serializer.dumps(value)
+                return self.serializer.loads(rv)
 
             wrapper.__rc_cache_params__ = {
                 'key_prefix': key_prefix,
@@ -243,12 +243,11 @@ class BaseCache(object):
         cache_results = self._raw_get_many(*cache_keys)
         for rv, (func, args, kwargs, promise, cache_key, expire) in izip(
                 cache_results, pending_operations):
-            if rv is not None:
-                promise.resolve(self.serializer.loads(rv))
-            else:
-                rv = func(*args, **kwargs)
-                self.set(cache_key, rv, expire)
-                promise.resolve(rv)
+            if rv is None:
+                value = func(*args, **kwargs)
+                self.set(cache_key, value, expire)
+                rv = self.serializer.dumps(value)
+            promise.resolve(self.serializer.loads(rv))
 
 
 class Cache(BaseCache):

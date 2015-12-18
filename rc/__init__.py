@@ -15,7 +15,7 @@ from rc.redis_router import RedisConsistentHashRouter
 from rc.testing import NullCache, FakeRedisCache
 
 
-__version__ = '0.1'
+__version__ = '0.1.1'
 
 
 __all__ = [

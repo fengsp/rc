@@ -6,3 +6,12 @@ Version 0.1
 -----------
 
 First public preview release.
+
+
+Version 0.1.1
+-------------
+
+Bugfix release, released on Dec 18th 2015
+
+- Make the cache decorated function always return result through the
+  serializer, so we get consistent result

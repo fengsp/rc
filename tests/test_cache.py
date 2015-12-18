@@ -75,7 +75,9 @@ def test_cache_decorator_basic_apis(redis_unix_socket_path):
     @cache.cache()
     def load(name, offset):
         return ' '.join(('load', name, offset))
-    assert load('name', 'offset') == 'load name offset'
+    rv = load('name', 'offset')
+    assert isinstance(rv, unicode)
+    assert rv == 'load name offset'
     assert load('name', offset='offset') == 'load name offset'
 
     @cache.cache()
