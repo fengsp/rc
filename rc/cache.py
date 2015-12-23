@@ -154,6 +154,14 @@ class BaseCache(object):
 
         .. note::
 
+            Using objects as part of the cache key is possible, though it is
+            suggested to not pass in an object instance as parameter.  We
+            perform a str() on the passed in objects so that you can provide
+            a __str__ function that returns a identifying string for that
+            object, the unique string will be used as part of the cache key.
+
+        .. note::
+
             When a method on a class is decorated, the ``self`` or ``cls``
             arguments is not included in the cache key.
         """
