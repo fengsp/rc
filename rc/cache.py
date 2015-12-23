@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import inspect
 import functools
 from itertools import izip
 
@@ -125,7 +126,7 @@ class BaseCache(object):
             return True
         return all(self.delete(key) for key in keys)
 
-    def cache(self, key_prefix=None, expire=None):
+    def cache(self, key_prefix=None, expire=None, include_self=False):
         """A decorator that is used to cache a function with supplied
         parameters.  It is intended for decorator usage::
 
@@ -144,6 +145,8 @@ class BaseCache(object):
                            in this module, normally you do not need to pass
                            this in
         :param expire: expiration time
+        :param include_self: whether to include the `self` or `cls` as
+                             cache key for method or not, default to be False
 
         .. note::
 
@@ -163,13 +166,25 @@ class BaseCache(object):
         .. note::
 
             When a method on a class is decorated, the ``self`` or ``cls``
-            arguments is not included in the cache key.
+            arguments is not included in the cache key.  Starting from 0.2
+            you can control it with `include_self`.  If you set
+            `include_self` to True, remember to provide `__str__` method
+            for the object, otherwise you might encounter random behavior.
+
+        .. versionadded:: 0.2
+            The `include_self` parameter was added.
         """
         def decorator(f):
             @functools.wraps(f)
             def wrapper(*args, **kwargs):
+                cache_args = args
+                # handle self and cls
+                argspec = inspect.getargspec(f)
+                if argspec and argspec[0] and argspec[0][0] in ('self', 'cls'):
+                    if not include_self:
+                        cache_args = args[1:]
                 cache_key = generate_key_for_cached_func(
-                    key_prefix, f, *args, **kwargs)
+                    key_prefix, f, *cache_args, **kwargs)
                 if self._running_mode == BATCH_MODE:
                     promise = Promise()
                     self._pending_operations.append(
@@ -185,6 +200,7 @@ class BaseCache(object):
             wrapper.__rc_cache_params__ = {
                 'key_prefix': key_prefix,
                 'expire': expire,
+                'include_self': include_self,
             }
             return wrapper
         return decorator
@@ -214,8 +230,14 @@ class BaseCache(object):
             raise TypeError('Attempted to invalidate a function that is'
                             'not cache decorated')
         key_prefix = cache_params['key_prefix']
+        cache_args = args
+        include_self = cache_params.get('include_self', False)
+        if include_self:
+            instance_self = getattr(func, '__self__', None)
+            if instance_self:
+                cache_args = tuple([instance_self] + list(args))
         cache_key = generate_key_for_cached_func(
-            key_prefix, func, *args, **kwargs)
+            key_prefix, func, *cache_args, **kwargs)
         return self.delete(cache_key)
 
     def batch_mode(self):

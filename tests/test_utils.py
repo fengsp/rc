@@ -10,15 +10,18 @@ def test_generate_key():
     assert cache_key == u'prefix test_utils func foo'
     cache_key = generate_key_for_cached_func(None, func, 'foo', k='v')
     assert cache_key == u'test_utils func foo k=v'
-    cache_key = generate_key_for_cached_func(None, func, 'foo', k='v', k2='v2')
+    cache_key = generate_key_for_cached_func(None, func,
+                                             'foo', k='v', k2='v2')
     assert cache_key == u'test_utils func foo k=v k2=v2'
 
     def method(self):
         pass
-    cache_key = generate_key_for_cached_func(None, method, None, 'foo')
+    cache_key = generate_key_for_cached_func(None, method, 'foo')
     assert cache_key == u'test_utils method foo'
+    cache_key = generate_key_for_cached_func(None, method, None, 'foo')
+    assert cache_key == u'test_utils method None foo'
 
     def method(cls):
         pass
-    cache_key = generate_key_for_cached_func(None, method, None, 'foo')
+    cache_key = generate_key_for_cached_func(None, method, 'foo')
     assert cache_key == u'test_utils method foo'

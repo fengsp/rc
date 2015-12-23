@@ -15,3 +15,12 @@ Bugfix release, released on Dec 18th 2015
 
 - Make the cache decorated function always return result through the
   serializer, so we get consistent result
+
+
+Version 0.2
+-----------
+
+Released on Dec 23th 2015
+
+- Added include_self parameter for cache decorated function, now we can
+  cache instance method.

@@ -98,7 +98,54 @@ def test_cache_decorator_basic_apis(redis_unix_socket_path):
     foo = Foo()
     assert foo.load_method('name', 10) == 'load name 10'
     assert foo.load_method('name', offset=10) == 'load name 10'
+
+    class Foo(object):
+        @cache.cache()
+        def load_method(self, name, offset):
+            return ' '.join(('load02', name, str(offset)))
+    foo = Foo()
+    assert foo.load_method('name', 10) == 'load name 10'
     assert cache.invalidate(foo.load_method, 'name', 10)
+    assert foo.load_method('name', 10) == 'load02 name 10'
+
+
+def test_cache_decorator_include_self(redis_unix_socket_path):
+    cache = Cache(redis_options={'unix_socket_path': redis_unix_socket_path})
+
+    class User(object):
+        def __init__(self, user_id):
+            self.user_id = user_id
+
+        def __str__(self):
+            return '<User %s>' % self.user_id
+
+        @cache.cache(include_self=True)
+        def load(self, name, offset):
+            return ' '.join(('load', name, str(offset)))
+    user01 = User(1)
+    user02 = User(2)
+
+    assert user01.load('name', 'offset') == 'load name offset'
+    assert user02.load('name', 'offset') == 'load name offset'
+
+    class User(object):
+        def __init__(self, user_id):
+            self.user_id = user_id
+
+        def __str__(self):
+            return '<User %s>' % self.user_id
+
+        @cache.cache(include_self=True)
+        def load(self, name, offset):
+            return ' '.join(('load02', name, str(offset)))
+    user01 = User(1)
+    user02 = User(2)
+
+    assert user01.load('name', 'offset') == 'load name offset'
+    assert user02.load('name', 'offset') == 'load name offset'
+    assert cache.invalidate(user01.load, 'name', 'offset')
+    assert user01.load('name', 'offset') == 'load02 name offset'
+    assert user02.load('name', 'offset') == 'load name offset'
 
 
 def test_cache_cluster_basic_apis(redis_hosts):

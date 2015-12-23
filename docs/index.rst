@@ -57,3 +57,15 @@ class or method.
    :maxdepth: 2
 
    api
+
+
+Additional Stuff
+----------------
+
+Changelog and license here if you are interested.
+
+.. toctree::
+   :maxdepth: 2
+
+   changelog
+   license

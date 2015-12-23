@@ -1,6 +1,3 @@
-import inspect
-
-
 def u_(s):
     if isinstance(s, unicode):
         return s
@@ -19,10 +16,6 @@ def generate_key_for_cached_func(key_prefix, func, *args, **kwargs):
         key_prefix = [key_prefix]
     module_name = func.__module__
     func_name = func.__name__
-    # skip self and cls
-    argspec = inspect.getargspec(func)
-    if argspec and argspec[0] and argspec[0][0] in ('self', 'cls'):
-        args = args[1:]
     # handle keyword arguments
     kwargs = kwargs.items()
     if kwargs:
