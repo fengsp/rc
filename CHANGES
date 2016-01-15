@@ -24,3 +24,11 @@ Released on Dec 23th 2015
 
 - Added include_self parameter for cache decorated function, now we can
   cache instance method.
+
+
+Version 0.2.1
+-------------
+
+Enhancement release, released on Jan 15th 2016
+
+- Only check has_self once to get rid of the inspect performance issue

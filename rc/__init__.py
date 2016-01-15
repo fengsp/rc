@@ -5,7 +5,7 @@
 
     The redis cache.
 
-    :copyright: (c) 2015 by Shipeng Feng.
+    :copyright: (c) 2016 by Shipeng Feng.
     :license: BSD, see LICENSE for more details.
 """
 from rc.cache import Cache, CacheCluster
@@ -15,7 +15,7 @@ from rc.redis_router import RedisConsistentHashRouter
 from rc.testing import NullCache, FakeRedisCache
 
 
-__version__ = '0.2'
+__version__ = '0.2.1'
 
 
 __all__ = [

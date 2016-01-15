@@ -175,12 +175,17 @@ class BaseCache(object):
             The `include_self` parameter was added.
         """
         def decorator(f):
+            argspec = inspect.getargspec(f)
+            if argspec and argspec[0] and argspec[0][0] in ('self', 'cls'):
+                has_self = True
+            else:
+                has_self = False
+
             @functools.wraps(f)
             def wrapper(*args, **kwargs):
                 cache_args = args
                 # handle self and cls
-                argspec = inspect.getargspec(f)
-                if argspec and argspec[0] and argspec[0][0] in ('self', 'cls'):
+                if has_self:
                     if not include_self:
                         cache_args = args[1:]
                 cache_key = generate_key_for_cached_func(
