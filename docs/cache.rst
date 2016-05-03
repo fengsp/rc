@@ -109,3 +109,19 @@ check the api for more details.  Basically we record all functions you want
 to execute and return a :class:`~rc.promise.Promise` object.  When you leaves
 the batch context manager, the promise is resolved and the result value is
 there for you.
+
+
+Bypass Values
+-------------
+
+.. versionadded:: 0.3
+
+When you are using the cache decorator, sometimes you don't want to cache
+certain return value of decorated functions, you can bypass them::
+
+    cache = Cache(bypass_values=[None])
+
+    @cache.cache()
+    def load():
+        # this won't be cached
+        return None

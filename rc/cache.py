@@ -32,15 +32,21 @@ class BaseCache(object):
     :param serializer_cls: the serialization class you want to use.
     :param default_expire: default expiration time that is used if no
                            expire specified on :meth:`~rc.cache.BaseCache.set`.
+    :param bypass_values: a list of return values that would be ignored by the
+                          cache decorator and won't be cached at all.
+
+    .. versionadded:: 0.3
+        The `bypass_values` parameter was added.
     """
 
     def __init__(self, namespace=None, serializer_cls=None,
-                 default_expire=3 * 24 * 3600):
+                 default_expire=3 * 24 * 3600, bypass_values=[]):
         if serializer_cls is None:
             serializer_cls = JSONSerializer
         self.namespace = namespace or ''
         self.serializer_cls = serializer_cls
         self.default_expire = default_expire
+        self.bypass_values = bypass_values
         self._running_mode = NORMAL_MODE
         self._pending_operations = []
 
@@ -60,6 +66,11 @@ class BaseCache(object):
 
     def _raw_get(self, key):
         return self.client.get(self.namespace + key)
+
+    def _raw_set(self, key, string, expire=None):
+        if expire is None:
+            expire = self.default_expire
+        return self.client.setex(self.namespace + key, expire, string)
 
     def _raw_get_many(self, *keys):
         if not keys:
@@ -84,10 +95,7 @@ class BaseCache(object):
         :param expire: expiration time
         :return: Whether the key has been set
         """
-        if expire is None:
-            expire = self.default_expire
-        string = self.serializer.dumps(value)
-        return self.client.setex(self.namespace + key, expire, string)
+        return self._raw_set(key, self.serializer.dumps(value), expire)
 
     def delete(self, key):
         """Deletes the value for the cache key.
@@ -198,8 +206,9 @@ class BaseCache(object):
                 rv = self._raw_get(cache_key)
                 if rv is None:
                     value = f(*args, **kwargs)
-                    self.set(cache_key, value, expire)
                     rv = self.serializer.dumps(value)
+                    if value not in self.bypass_values:
+                        self._raw_set(cache_key, rv, expire)
                 return self.serializer.loads(rv)
 
             wrapper.__rc_cache_params__ = {
@@ -280,8 +289,9 @@ class BaseCache(object):
                 cache_results, pending_operations):
             if rv is None:
                 value = func(*args, **kwargs)
-                self.set(cache_key, value, expire)
                 rv = self.serializer.dumps(value)
+                if value not in self.bypass_values:
+                    self._raw_set(cache_key, rv, expire)
             promise.resolve(self.serializer.loads(rv))
 
 
@@ -301,12 +311,19 @@ class Cache(BaseCache):
                            expire specified on :meth:`set`.
     :param redis_options: a dictionary of parameters that are useful for
                           setting other parameters to the StrictRedis client.
+    :param bypass_values: a list of return values that would be ignored by the
+                          cache decorator and won't be cached at all.
+
+    .. versionadded:: 0.3
+        The `bypass_values` parameter was added.
     """
 
     def __init__(self, host='localhost', port=6379, db=0, password=None,
                  socket_timeout=None, namespace=None, serializer_cls=None,
-                 default_expire=3 * 24 * 3600, redis_options=None):
-        BaseCache.__init__(self, namespace, serializer_cls, default_expire)
+                 default_expire=3 * 24 * 3600, redis_options=None,
+                 bypass_values=[]):
+        BaseCache.__init__(self, namespace, serializer_cls, default_expire,
+                           bypass_values)
         if redis_options is None:
             redis_options = {}
         self.host = host
@@ -375,13 +392,19 @@ class CacheCluster(BaseCache):
                            the parallel query implementation, use this
                            to specify timeout for the underlying pollers
                            (select/poll/kqueue/epoll).
+    :param bypass_values: a list of return values that would be ignored by the
+                          cache decorator and won't be cached at all.
+
+    .. versionadded:: 0.3
+        The `bypass_values` parameter was added.
     """
 
     def __init__(self, hosts, namespace=None, serializer_cls=None,
                  default_expire=3 * 24 * 3600, router_cls=None,
                  router_options=None, pool_cls=None, pool_options=None,
-                 max_concurrency=64, poller_timeout=1.0):
-        BaseCache.__init__(self, namespace, serializer_cls, default_expire)
+                 max_concurrency=64, poller_timeout=1.0, bypass_values=[]):
+        BaseCache.__init__(self, namespace, serializer_cls, default_expire,
+                           bypass_values)
         self.hosts = hosts
         self.router_cls = router_cls
         self.router_options = router_options
