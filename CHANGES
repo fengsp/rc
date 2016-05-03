@@ -32,3 +32,12 @@ Version 0.2.1
 Enhancement release, released on Jan 15th 2016
 
 - Only check has_self once to get rid of the inspect performance issue
+
+
+Version 0.3
+-----------
+
+Released on May 3th 2016
+
+- Added bypass_values parameter for cache object, now we can bypass
+  certain return values of cache decorated function
