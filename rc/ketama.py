@@ -44,6 +44,9 @@ class HashRing(object):
         if not self._hashring:
             return
 
+        if isinstance(key, unicode):
+            key = key.encode('utf8')
+
         k = md5_bytes(key)
         key = (k[3] << 24) | (k[2] << 16) | (k[1] << 8) | k[0]
 
