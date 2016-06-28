@@ -41,3 +41,11 @@ Released on May 3th 2016
 
 - Added bypass_values parameter for cache object, now we can bypass
   certain return values of cache decorated function
+
+
+Version 0.3.1
+-------------
+
+Bugfix release, released on June 28th 2016
+
+- Fixed ketama get node when key is unicode
